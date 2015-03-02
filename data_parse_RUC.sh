@@ -5,7 +5,7 @@
 # Last modified: 2/28/2015
 
 # Cylce through years and months of interest
-for i in {2010..2011}
+for i in {2010..2012}
 do
 	for j in {1..12}
 	do
