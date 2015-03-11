@@ -147,7 +147,9 @@ for (case in 1:3) {
 			} else {
 				fname = paste(output_dir,"RUC_table_USA_",years[year_ind],"_",months[month_ind],".Rdata",sep="")
 			}
-			save(vis,precip_wat,t_precip,rain,snow,CAPE,REFC,file=fname)
+			if (sum(! is.na(vis))>10) {
+				save(vis,precip_wat,t_precip,rain,snow,CAPE,REFC,file=fname)
+			}
 			# Throw out the matrices
 			rm(vis,precip_wat,t_precip,rain,snow,CAPE,REFC)
 		}
