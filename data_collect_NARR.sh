@@ -1,12 +1,12 @@
 #! /bin/sh
 # This is a script for writing a longer script to download NARR weather data from NOMADS, a repository run by NOAA.
 # Script author: Kenneth Kuhn
-# Last modified: 3/11/2015
+# Last modified: 3/12/2015
 
 # Cylce through years and months of interest
 for i in {2014..2014}
 do
-	for j in {1..12}
+	for j in 1 3
 	do
 		# ftp in to the proper month directory on NOMADS
 		if [ ${j} -lt 10 ]; then
@@ -23,17 +23,13 @@ do
 				if [ ${k} -lt 10 ]; then
 					echo cd ${i}0${j}0${k} >> NARR_script.sh
 				else
-					if [ -d ${i}0${j}${k} ]; then
-						echo cd ${i}0${j}${k} >> NARR_script.sh
-					fi
+					echo cd ${i}0${j}${k} >> NARR_script.sh
 				fi
 			else
 				if [ ${k} -lt 10 ]; then
 					echo cd ${i}${j}0${k} >> NARR_script.sh
 				else
-					if [ -d ${i}${j}${k} ]; then
-						echo cd ${i}${j}${k} >> NARR_script.sh
-					fi
+					echo cd ${i}${j}${k} >> NARR_script.sh
 				fi
 			fi
 			# download the narr data then go back to the month directory
