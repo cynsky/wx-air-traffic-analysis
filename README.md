@@ -38,14 +38,18 @@ The weather and air traffic data come in formats that can be challenging to use 
 
 Considering all the data sources described above, we ended up collecting several billion data points per day.  Of course, not all of these data points are relevant for our project.
 
-Feature selection is really at the heart of our project.  The overall goal is to take massive amounts of data and boil it down until each day can be reprsented solely via a single variable: cluster membershp.  After an extensive literature survey and discussion, we identified four methodologies for feature selection.  Different methdologies will most useful in different circumstances.
+Feature selection is really at the heart of our project.  The overall goal is to take massive amounts of data and boil it down until each day can be represented solely via a single variable: cluster membership.  After an extensive literature survey and discussion, we identified four methodologies for feature selection.  These methodologies can be applied separately or in tandem.  There is no single correct way to select features and different approaches will most useful in different circumstances.
 
 - **PCA:** reduce the dimensionality of collected data while keeping as much of the variation between days as possible.
 
-- **Knowledge Based Feature Selection:** identify features from the available literature, discussions with subject matter experts, and using our expert judgment.
+- **Knowledge Based Feature Selection:** identify features based on the available literature, discussions with subject matter experts, and using our expert judgment.
 
-- **Regression / Synthetic Knowledge:** build regression models relating many weather variables to statistics summarizing conditions or measuring system performance. Use variables identified as important or model outputs as features to cluster on subsequently.
+- **Regression / Synthetic Knowledge:** build regression models relating many weather and traffic variables to statistics summarizing conditions, measuring system performance, summarizing air traffic management decisions, etc. Use variables identified as important or model outputs as features to cluster on subsequently.
 
 - **Traffic Biasing:** weight weather observations by how much traffic is observed or scheduled to fly through the area at the time of the observation.
 
 ### Cluster analysis
+
+- **k-means:** 
+
+- **DBSCAN:** 
