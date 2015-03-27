@@ -1,5 +1,5 @@
-# This is a script for using Expert Judgment to reduce the dimensionality of collected NARR
-# aviation weather data, creating three smaller sets of variables that reflect observed weather
+# This is a script for using Expert Judgment to reduce the dimensionality of collected RUC and RAP
+# aviation weather forecast data, creating three smaller sets of variables that reflect forecast weather
 # conditions. The three sets are based on the application of three distrinct methodologies. The
 # first generalizes an idea found in the lit on the FAA's Severe Weather Avoidance Program (SWAP)
 # in New York, looking at the distance from busy airports to intense precipitation. The second is
@@ -15,19 +15,18 @@ library(ncdf)
 library(geosphere)
 
 # Point out the base directories for reading in and saving data
-input_dir = "/Volumes/NASA_data_copy/data_raw/airspace_weather/NARR/"
+input_dir = "/Volumes/NASA_data_copy/data_raw/airspace_weather/RUC/"
 output_dir = "/Volumes/NASA_data_copy/features_data/"
 
 # Load in the routes and waypoints
 routes <- read.csv("/Volumes/NASA_data_copy/data_raw/TFMI_data/airways.csv")
 waypoints <- read.csv("/Volumes/NASA_data_copy/data_raw/TFMI_data/waypoints.csv")
 
-# Load in the locations of NARR grid cells, NYC, and ATL
-fname1 = "/Volumes/NASA_data_copy/data_raw/airspace_weather/NARR/grid.nc"
-temp.nc = open.ncdf(fname1)
-lat221 = get.var.ncdf(temp.nc,"gridlat_221")
-lon221 = get.var.ncdf(temp.nc,"gridlon_221")
-close(temp.nc)
+# Load in the locations of RUC and RAP grid cells, NYC, and ATL
+fname <- paste(input_dir,"ruc2_252_latlon.txt",sep="")
+temp <- read.table(fname,header=FALSE)
+grid_lat <- matrix(t(as.matrix(temp[1:4515,1:15])),nrow=301)
+grid_lon <- matrix(t(as.matrix(temp[4516:9030,1:15])),nrow=301)
 nyc = c(40.7127,-74.0059)
 atl = c(33.7550,-84.3900)
 
@@ -48,7 +47,7 @@ dist_coord <- function(lon1,lat1,lon2,lat2) {
 # Originally this called dist_coord() but it gives the same results and works much
 # faster when just adding up differences in lat and lon.
 cell_coord <- function(lon1,lat1) {
-	dist_mat = abs(lat221-lat1)+abs(lon221-lon1)
+	dist_mat = abs(grid_lat-lat1)+abs(grid_lon-lon1)
 	closest = which(dist_mat==min(dist_mat),arr.ind=TRUE)
 	return(closest)
 }
@@ -68,17 +67,18 @@ ATLroutes = routes[which(routes$region=="ATL"),]
 # Pick out the grid cells that are on a key airway
 #
 # Start with blank matrices
-grid_dim = dim(lat221)
-# NY_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
-# ATL_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
-# USA_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
+grid_dim = dim(grid_lat)
+NY_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
+ATL_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
+USA_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
 # Cycle through each grid point and find the distance to the nearest airway
 # This part takes several hours so run once and save the result
+# library(tcltk)
 # progress = tkProgressBar(title="Going through grid points",min=0,max=grid_dim[1],width=200)
 # for (i1 in 1:grid_dim[1]) {
 # 	for (i2 in 1:grid_dim[2]) {
 # 		# Compare the location of the current grid point to first New York airway
-# 		cur_loc = c(lon221[i1,i2],lat221[i1,i2])
+# 		cur_loc = c(grid_lon[i1,i2],grid_lat[i1,i2])
 # 		this_route = rbind(c(NYroutes$pt1_lon[1],NYroutes$pt1_lat[1]),c(NYroutes$pt2_lon[1],NYroutes$pt2_lat[1]))
 # 		how_close = dist2Line(cur_loc,this_route)
 # 		NY_dist = how_close[1]
@@ -112,7 +112,7 @@ grid_dim = dim(lat221)
 # 	}
 # 	setTkProgressBar(progress,i1,label=paste(round(i1/grid_dim[1]*100,1),"% done"))
 # }
-# save(NY_grid,ATL_grid,file=paste(output_dir,"airways_NARR_dist.Rdata",sep=""))
+# save(NY_grid,ATL_grid,file=paste(output_dir,"airways_RUC_dist.Rdata",sep=""))
 load(file=paste(output_dir,"airways_NARR_dist.Rdata",sep=""))
 # Pick out the grid points on an airway
 # How large are the grid cells, in meters
@@ -134,24 +134,24 @@ USA_grid_route = c(NY_grid_route,ATL_grid_route)
 
 # Identify the years, months, and timestamps for which we have data
 # Days depends on the month, so we don't do that here
-years = c("2010","2011","2012","2013")
+years = c("2010","2011","2012","2013","2014")
 months = c("01","02","03","04","05","06","07","08","09","10","11","12")
 timestamps = c("0000","0300","0600","0900","1200","1500","1800","2100")
 
 # Set up the blank matrices that will store our new, reduced data sets
-nyc_1 = matrix(0.0,nrow=1461,ncol=24)
-nyc_2 = matrix(0.0,nrow=1461,ncol=5)
-nyc_3 = matrix(0.0,nrow=1461,ncol=5)
-atl_1 = matrix(0.0,nrow=1461,ncol=24)
-atl_2 = matrix(0.0,nrow=1461,ncol=5)
-atl_3 = matrix(0.0,nrow=1461,ncol=5)
-usa_1 = matrix(0.0,nrow=1461,ncol=48)
-usa_2 = matrix(0.0,nrow=1461,ncol=5)
-usa_3 = matrix(0.0,nrow=1461,ncol=5)
+nyc_1 = matrix(0.0,nrow=1826,ncol=24)
+nyc_2 = matrix(0.0,nrow=1826,ncol=5)
+nyc_3 = matrix(0.0,nrow=1826,ncol=5)
+atl_1 = matrix(0.0,nrow=1826,ncol=24)
+atl_2 = matrix(0.0,nrow=1826,ncol=5)
+atl_3 = matrix(0.0,nrow=1826,ncol=5)
+usa_1 = matrix(0.0,nrow=1826,ncol=48)
+usa_2 = matrix(0.0,nrow=1826,ncol=5)
+usa_3 = matrix(0.0,nrow=1826,ncol=5)
 day_counter = 1
 
 # Cycle through the months of interest, using an index
-for (year_ind in 1:4) {
+for (year_ind in 1:5) {
 	# Cycle through the years of interest, using an index
 	for (month_ind in 1:12) {
 		# Identify the days - in the relevant month - for which we have data
@@ -186,47 +186,56 @@ for (year_ind in 1:4) {
 			usa_cape_vec = c()
 			# Cycle through the timestamps of interest, using an index
 			for (time_index in 1:length(timestamps)) {
-				# Get the relevant NARR data
-				fname = paste(input_dir,years[year_ind],months[month_ind],"/narr-a_221_",years[year_ind],months[month_ind],days[day_index],"_",timestamps[time_index],"_000.nc",sep="")
+				# Get the relevant RUC or RAP data
+				if (year_ind<=3) {
+					fname = paste(input_dir,years[year_ind],months[month_ind],"/ruc2_252_",years[year_ind],months[month_ind],days[day_index],"_",timestamps[time_index],"_002.nc",sep="")
+				} else {
+					fname = paste(input_dir,years[year_ind],months[month_ind],"/rap_252_",years[year_ind],months[month_ind],days[day_index],"_",timestamps[time_index],"_002.nc",sep="")
+				}
 				if (file.exists(fname)) {
 					temp.nc = open.ncdf(fname)
-					total_precip = get.var.ncdf(temp.nc,"A_PCP_221_SFC_acc3h")
-					CAPE = get.var.ncdf(temp.nc,"CAPE_221_SFC")
+					if (year_ind<=3) {
+						total_precip = get.var.ncdf(temp.nc,"ACPCP_252_SFC_acc2h")
+						CAPE = get.var.ncdf(temp.nc,"CAPE_252_SFC")
+					} else {
+						total_precip = get.var.ncdf(temp.nc,"ACPCP_P8_L1_GLC0_acc2h")
+						CAPE = get.var.ncdf(temp.nc,"CAPE_P0_L1_GLC0")
+					}
 					close.ncdf(temp.nc)
 					# Approach 1: SWAP-like
 					# Find the distance from N90 to moderate and intense and super precipitation
 					moderate = which(total_precip>1.5)
 					if (length(moderate)>=1) {
-						dist_mat_nyc = abs(lat221[moderate]-nyc[1])+abs(lon221[moderate]-nyc[2])
-						dist_mat_atl = abs(lat221[moderate]-atl[1])+abs(lon221[moderate]-atl[2])
-						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))
-						closest_atl = which(dist_mat_atl==min(dist_mat_atl))
-						prox_mod_nyc = dist_coord(nyc[2],nyc[1],lon221[closest_nyc],lat221[closest_nyc])
-						prox_mod_atl = dist_coord(atl[2],atl[1],lon221[closest_atl],lat221[closest_atl])
+						dist_mat_nyc = abs(grid_lat[moderate]-nyc[1])+abs(grid_lon[moderate]-nyc[2])
+						dist_mat_atl = abs(grid_lat[moderate]-atl[1])+abs(grid_lon[moderate]-atl[2])
+						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))[1]
+						closest_atl = which(dist_mat_atl==min(dist_mat_atl))[1]
+						prox_mod_nyc = dist_coord(nyc[2],nyc[1],grid_lon[closest_nyc],grid_lat[closest_nyc])
+						prox_mod_atl = dist_coord(atl[2],atl[1],grid_lon[closest_atl],grid_lat[closest_atl])
 					} else {
 						prox_mod_nyc = 9999
 						prox_mod_atl = 9999
 					}
 					intense = which(total_precip>3.0)
 					if (length(intense)>=1) {
-						dist_mat_nyc = abs(lat221[intense]-nyc[1])+abs(lon221[intense]-nyc[2])
-						dist_mat_atl = abs(lat221[intense]-atl[1])+abs(lon221[intense]-atl[2])
-						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))
-						closest_atl = which(dist_mat_atl==min(dist_mat_atl))
-						prox_int_nyc = dist_coord(nyc[2],nyc[1],lon221[closest_nyc],lat221[closest_nyc])
-						prox_int_atl = dist_coord(atl[2],atl[1],lon221[closest_atl],lat221[closest_atl])
+						dist_mat_nyc = abs(grid_lat[intense]-nyc[1])+abs(grid_lon[intense]-nyc[2])
+						dist_mat_atl = abs(grid_lat[intense]-atl[1])+abs(grid_lon[intense]-atl[2])
+						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))[1]
+						closest_atl = which(dist_mat_atl==min(dist_mat_atl))[1]
+						prox_int_nyc = dist_coord(nyc[2],nyc[1],grid_lon[closest_nyc],grid_lat[closest_nyc])
+						prox_int_atl = dist_coord(atl[2],atl[1],grid_lon[closest_atl],grid_lat[closest_atl])
 					} else {
 						prox_int_nyc = 9999
 						prox_int_atl = 9999
 					}
 					super = which(total_precip>5.0)
 					if (length(super)>=1) {
-						dist_mat_nyc = abs(lat221[super]-nyc[1])+abs(lon221[super]-nyc[2])
-						dist_mat_atl = abs(lat221[super]-atl[1])+abs(lon221[super]-atl[2])
-						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))
-						closest_atl = which(dist_mat_atl==min(dist_mat_atl))
-						prox_sup_nyc = dist_coord(nyc[2],nyc[1],lon221[closest_nyc],lat221[closest_nyc])
-						prox_sup_atl = dist_coord(atl[2],atl[1],lon221[closest_atl],lat221[closest_atl])
+						dist_mat_nyc = abs(grid_lat[super]-nyc[1])+abs(grid_lon[super]-nyc[2])
+						dist_mat_atl = abs(grid_lat[super]-atl[1])+abs(grid_lon[super]-atl[2])
+						closest_nyc = which(dist_mat_nyc==min(dist_mat_nyc))[1]
+						closest_atl = which(dist_mat_atl==min(dist_mat_atl))[1]
+						prox_sup_nyc = dist_coord(nyc[2],nyc[1],grid_lon[closest_nyc],grid_lat[closest_nyc])
+						prox_sup_atl = dist_coord(atl[2],atl[1],grid_lon[closest_atl],grid_lat[closest_atl])
 					} else {
 						prox_sup_nyc = 9999
 						prox_sup_atl = 9999
@@ -346,15 +355,26 @@ colnames(usa_1) = c("dist_mod_precip_1","dist_int_precip_1","dist_sup_precip_1",
 colnames(usa_2) = c("est_airways_blocked","median_airway_precip","median_airway_CAPE","max_airway_precip","est_airways_impacted")
 colnames(usa_3) = c("est_fixes_blocked","median_fix_precip","median_fix_CAPE","max_fix_precip","est_fixes_impacted")
 
+# in R, the max of a bunch of NA values returns -Inf.  NA is a bit clearer.
+nyc_1[nyc_1==-Inf] = NA
+nyc_2[nyc_2==-Inf] = NA
+nyc_3[nyc_3==-Inf] = NA
+atl_1[atl_1==-Inf] = NA
+atl_2[atl_2==-Inf] = NA
+atl_3[atl_3==-Inf] = NA
+usa_1[usa_1==-Inf] = NA
+usa_2[usa_2==-Inf] = NA
+usa_3[usa_3==-Inf] = NA
+
 # Save the results to .csv files
-write.csv(nyc_1,paste(output_dir,"NY_NARR_expert_1.csv",sep=""),row.names=FALSE)
-write.csv(nyc_2,paste(output_dir,"NY_NARR_expert_2.csv",sep=""),row.names=FALSE)
-write.csv(nyc_3,paste(output_dir,"NY_NARR_expert_3.csv",sep=""),row.names=FALSE)
-write.csv(atl_1,paste(output_dir,"ATL_NARR_expert_1.csv",sep=""),row.names=FALSE)
-write.csv(atl_2,paste(output_dir,"ATL_NARR_expert_2.csv",sep=""),row.names=FALSE)
-write.csv(atl_3,paste(output_dir,"ATL_NARR_expert_3.csv",sep=""),row.names=FALSE)
-write.csv(usa_1,paste(output_dir,"USA_NARR_expert_1.csv",sep=""),row.names=FALSE)
-write.csv(usa_2,paste(output_dir,"USA_NARR_expert_2.csv",sep=""),row.names=FALSE)
-write.csv(usa_3,paste(output_dir,"USA_NARR_expert_3.csv",sep=""),row.names=FALSE)
+write.csv(nyc_1,paste(output_dir,"NY_RUC_expert_1.csv",sep=""),row.names=FALSE)
+write.csv(nyc_2,paste(output_dir,"NY_RUC_expert_2.csv",sep=""),row.names=FALSE)
+write.csv(nyc_3,paste(output_dir,"NY_RUC_expert_3.csv",sep=""),row.names=FALSE)
+write.csv(atl_1,paste(output_dir,"ATL_RUC_expert_1.csv",sep=""),row.names=FALSE)
+write.csv(atl_2,paste(output_dir,"ATL_RUC_expert_2.csv",sep=""),row.names=FALSE)
+write.csv(atl_3,paste(output_dir,"ATL_RUC_expert_3.csv",sep=""),row.names=FALSE)
+write.csv(usa_1,paste(output_dir,"USA_RUC_expert_1.csv",sep=""),row.names=FALSE)
+write.csv(usa_2,paste(output_dir,"USA_RUC_expert_2.csv",sep=""),row.names=FALSE)
+write.csv(usa_3,paste(output_dir,"USA_RUC_expert_3.csv",sep=""),row.names=FALSE)
 
 
