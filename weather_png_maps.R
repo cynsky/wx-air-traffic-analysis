@@ -2,7 +2,7 @@
 # This is a script for creating png image files showing precipitation around New York, along with
 # local airports, fixes, and airways.
 # Script author: Kenneth Kuhn
-# Last modified: 3/21/2015
+# Last modified: 4/24/2015
 
 # Load the required libraries
 library(ncdf)
@@ -13,8 +13,8 @@ library(mapproj)
 require(grid)
 
 # Point to the useful directories
-data_dir <- "/Volumes/NASA_data_copy/data_raw/airspace_weather/NARR/"
-# data_dir <- "/Volumes/NASA_data_copy/data_raw/airspace_weather/RUC/"
+# data_dir <- "/Volumes/NASA_data_copy/data_raw/airspace_weather/NARR/"
+data_dir <- "/Volumes/NASA_data_copy/data_raw/airspace_weather/RUC/"
 output_dir <- "/Volumes/NASA_data_copy/output_other/nyc_wx_gifs/"
 
 # Load the waypoints and airways
@@ -43,18 +43,18 @@ base_sc <- brewer.pal(9,"YlOrBr")
 col_scale <- c("1"=base_sc[2],"2"=base_sc[3],"3"=base_sc[4],"4"=base_sc[5],"5"=base_sc[6],"6"=base_sc[7],"7"=base_sc[8],"8"=base_sc[9],"9"=base_sc[9])
 
 # Load in the lat, lon coordinates of NARR grid cells
-setwd(data_dir)
-fname <- "grid.nc"
-temp.nc <- open.ncdf(fname)
-grid_lat <- get.var.ncdf(temp.nc,"gridlat_221")
-grid_lon <- get.var.ncdf(temp.nc,"gridlon_221")
-close.ncdf(temp.nc)
+# setwd(data_dir)
+# fname <- "grid.nc"
+# temp.nc <- open.ncdf(fname)
+# grid_lat <- get.var.ncdf(temp.nc,"gridlat_221")
+# grid_lon <- get.var.ncdf(temp.nc,"gridlon_221")
+# close.ncdf(temp.nc)
 
 # Load in the lat, lon coordinates of RUC/RAP grid cells
-# fname <- paste(data_dir,"ruc2_252_latlon.txt",sep="")
-# temp <- read.table(fname,header=FALSE)
-# grid_lat <- matrix(t(as.matrix(temp[1:4515,1:15])),nrow=301)
-# grid_lon <- matrix(t(as.matrix(temp[4516:9030,1:15])),nrow=301)
+fname <- paste(data_dir,"ruc2_252_latlon.txt",sep="")
+temp <- read.table(fname,header=FALSE)
+grid_lat <- matrix(t(as.matrix(temp[1:4515,1:15])),nrow=301)
+grid_lon <- matrix(t(as.matrix(temp[4516:9030,1:15])),nrow=301)
 
 # List the years, months, and times of interest (days depend on month)
 years <- c("2010","2011","2012","2013","2014")
@@ -75,20 +75,20 @@ for (year_ind in 1:5) {
     for (day_ind in 1:length(days)) {
       for (time_ind in 1:length(times)) {
         # Load in the relevant NARR data and pick out the precipitation variable
-        fname <- paste(cur_dir,"narr-a_221_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_000.nc",sep="")
-        # if (year_ind<=3) {
-        #     fname <- paste(cur_dir,"ruc2_252_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_002.nc",sep="")
-        # } else {
-        #     fname <- paste(cur_dir,"rap_252_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_002.nc",sep="")
-        # }
+        # fname <- paste(cur_dir,"narr-a_221_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_000.nc",sep="")
+        if (year_ind<=3) {
+            fname <- paste(cur_dir,"ruc2_252_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_002.nc",sep="")
+        } else {
+            fname <- paste(cur_dir,"rap_252_",years[year_ind],months[month_ind],days[day_ind],"_",times[time_ind],"00_002.nc",sep="")
+        }
         if (file.exists(fname)) {
             temp.nc <- open.ncdf(fname)
-            total_precip <- get.var.ncdf(temp.nc,"A_PCP_221_SFC_acc3h")
-            # if (year_ind<=3) {
-            #     total_precip <- get.var.ncdf(temp.nc,"ACPCP_252_SFC_acc2h")
-            # } else {
-            #     total_precip <- get.var.ncdf(temp.nc,"ACPCP_P8_L1_GLC0_acc2h")
-            # }
+            # total_precip <- get.var.ncdf(temp.nc,"A_PCP_221_SFC_acc3h")
+            if (year_ind<=3) {
+                total_precip <- get.var.ncdf(temp.nc,"ACPCP_252_SFC_acc2h")
+            } else {
+                total_precip <- get.var.ncdf(temp.nc,"ACPCP_P8_L1_GLC0_acc2h")
+            }
             total_precip[is.na(total_precip)] <- 0
             close.ncdf(temp.nc)
             # Turn the precipitation data into a data frame with a factor variable for precip
@@ -116,8 +116,8 @@ for (year_ind in 1:5) {
               panel.border = element_blank(),panel.background=element_rect(fill="aquamarine3",colour="aquamarine3"))
             # cur_map <- cur_map + coord_map(projection="conic",lat0=37,xlim=c(-122,-68),ylim=c(25,50))
             cur_map <- cur_map + coord_map(projection="conic",lat0=41,xlim=c(-81.5,-67.0),ylim=c(36.0,45.5))
-            fname <- paste(output_dir,"Wx_",years[year_ind],"_",months[month_ind],"_",days[day_ind],"_",times[time_ind],".png",sep="")
-            # fname <- paste(output_dir,"RUC_",years[year_ind],"_",months[month_ind],"_",days[day_ind],"_",times[time_ind],".png",sep="")
+            # fname <- paste(output_dir,"Wx_",years[year_ind],"_",months[month_ind],"_",days[day_ind],"_",times[time_ind],".png",sep="")
+            fname <- paste(output_dir,"RUC_",years[year_ind],"_",months[month_ind],"_",days[day_ind],"_",times[time_ind],".png",sep="")
             png(file=fname,width=600,height=500)
             plot(cur_map)
             dev.off()

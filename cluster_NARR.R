@@ -53,7 +53,7 @@ exp3_d = dbscan(exp3,reach_dist)
 d1 = as.Date("2010-01-01")
 d2 = as.Date("2013-12-31")
 d_list = seq(d1,d2,by="1 day")
-d_list = as.character(d_list,"%m/%d/%y")
+d_list = as.character(d_list,"%m/%d/%Y")
 
 # Make data frames for export. For each set of cluster results, include 5 variables.  (THe web app will show
 # 5 features on a spider or parallel coordinates plot to let the user explore clusters.) In the case of PCA,

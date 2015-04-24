@@ -113,7 +113,7 @@ USA_grid = matrix(0,nrow=grid_dim[1],ncol=grid_dim[2])
 # 	setTkProgressBar(progress,i1,label=paste(round(i1/grid_dim[1]*100,1),"% done"))
 # }
 # save(NY_grid,ATL_grid,file=paste(output_dir,"airways_RUC_dist.Rdata",sep=""))
-load(file=paste(output_dir,"airways_NARR_dist.Rdata",sep=""))
+load(file=paste(output_dir,"airways_RUC_dist.Rdata",sep=""))
 # Pick out the grid points on an airway
 # How large are the grid cells, in meters
 grid_radius = 10*1609.34
