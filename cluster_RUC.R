@@ -3,7 +3,7 @@
 # in the airspace around New York on days in 2010, 2011, 2012, and 2014.
 #
 # Script author: Kenneth Kuhn
-# Last modified: 4/24/2015
+# Last modified: 5/8/2015
 
 # Point out the base directories for reading in and saving data
 input_dir = "/Volumes/NASA_data_copy/features_data/"
@@ -42,6 +42,25 @@ exp1 = scale(raw_exp1)
 exp2 = scale(raw_exp2)
 exp2[,2] = 0 # Something went wrong, no airway precipitation reported
 exp3 = scale(raw_exp3)
+
+# To use the elbow method and pick out the correct k for k means
+# Run the following code and eyeball the resulting graph
+wss = (nrow(exp3)-1)*sum(apply(exp3,2,var))
+for (i1 in 2:25) { wss[i]=sum(kmeans(exp3,centers=i1)$withinss) }
+plot(1:25,wss,type="b",xlab="Number of Clusters",ylab="Within groups sum of squares")
+# Or calculate the BIC
+kmeansBIC = function(fit){
+  m = ncol(fit$centers)
+  n = length(fit$cluster)
+  k = nrow(fit$centers)
+  D = fit$tot.withinss
+  return(D+log(n)*m*k)
+}
+BIC = (nrow(exp3)-1)*sum(apply(exp3,2,var))
+for (i1 in 2:25) {
+  new_model = kmeans(exp3,centers=i1)
+  BIC[i1] = kmeansBIC(new_model)
+}
 
 # Pick out clusters using k-means clustering where k is set to 5, 10, or 20
 pca1_k5 = kmeans(pca1,5)
