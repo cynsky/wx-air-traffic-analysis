@@ -4,9 +4,9 @@
 # Last modified: 3/12/2015
 
 # Cylce through years and months of interest
-for i in {2013..2014}
+for i in {2015..2015}
 do
-	for j in 1 3
+	for j in 4
 	do
 		# ftp in to the proper month directory on NOMADS
 		if [ ${j} -lt 10 ]; then
@@ -16,7 +16,7 @@ do
 		fi
 		echo prompt off >> RUC_script.sh
 		# Cycle through the days
-		for k in {1..31}
+		for k in {21..30}
 		do
 			# Go to the proper day directory, if it exists
 			if [ ${j} -lt 10 ]; then

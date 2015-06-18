@@ -6,7 +6,7 @@
 # Cylce through years and months of interest
 for i in {2014..2014}
 do
-	for j in 1 3
+	for j in {1..2}
 	do
 		# ftp in to the proper month directory on NOMADS
 		if [ ${j} -lt 10 ]; then

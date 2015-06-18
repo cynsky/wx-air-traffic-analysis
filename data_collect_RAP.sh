@@ -4,9 +4,9 @@
 # Last modified: 3/12/2015
 
 # Cylce through years and months of interest
-for i in {2013..2014}
+for i in {2015..2015}
 do
-	for j in 1 3
+	for j in {2..2}
 	do
 		# ftp in to the proper month directory on NOMADS
 		if [ ${j} -lt 10 ]; then
@@ -16,7 +16,7 @@ do
 		fi
 		echo prompt off >> RAP_script.sh
 		# Cycle through the days
-		for k in {1..31}
+		for k in {27..28}
 		do
 			# Go to the proper day directory, if it exists
 			if [ ${j} -lt 10 ]; then
@@ -52,7 +52,7 @@ do
 			if [ ! -d ${i}0${j} ]; then
 				echo mkdir ${i}0${j} >> RAP_script.sh
 			fi
-			echo mv narr-a* ./${i}0${j}/ >> RAP_script.sh
+			echo mv rap_252* ./${i}0${j}/ >> RAP_script.sh
 		else
 			if [ ! -d ${i}${j} ]; then
 				echo mkdir ${i}${j} >> RAP_script.sh

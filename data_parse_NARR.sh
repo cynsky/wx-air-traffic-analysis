@@ -5,9 +5,9 @@
 # Last modified: 2/28/2015
 
 # Cylce through years and months of interest
-for i in {2010..2012}
+for i in {2014..2014}
 do
-	for j in {1..12}
+	for j in {1..2}
 	do
 		# Go to the correct directory, based on the file structure from the data_collect_RUC.sh file
 		if [ ${j} -lt 10 ]; then
