@@ -70,9 +70,6 @@ for (cur_year in 2013:2015) {
 ASPM_features = data.frame(Date=date_vec,JFK1=JFK1,JFK2=JFK2,JFK3=JFK3,JFK4=JFK4,
 	EWR1=EWR1,EWR2=EWR2,EWR3=EWR3,EWR4=EWR4,LGA1=LGA1,LGA2=LGA2,LGA3=LGA3,LGA4=LGA4)
 
-# Remove the no longer used data
-rm(date_vec,JFK1,JFK2,JFK3,JFK4,EWR1,EWR2,EWR3,EWR4,LGA1,LGA2,LGA3,LGA4)
-
 # Combine the feature data
 TAF_features$date = as.Date(as.character(TAF_features$date),"%m/%d/%Y")
 ASPM_features$Date = as.Date(as.character(ASPM_features$Date),"%m/%d/%Y")
@@ -94,6 +91,42 @@ for (i1 in 1:length(fake_features[1,])) {
 
 # Cluster
 library(cluster)
+# Make a table of representative dates at airports in the New York area
+cluster_1 = pam(x=fake_features,k=10,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
+meds = sort(cluster_1$id.med)
+representative = data.frame(date=Date_vec[meds],
+	JFK_arr=JFK1[meds]+JFK2[meds]+JFK3[meds]+JFK4[meds],
+	EWR_arr=EWR1[meds]+EWR2[meds]+EWR3[meds]+EWR4[meds],
+	LGA_arr=LGA1[meds]+LGA2[meds]+LGA3[meds]+LGA4[meds],
+	JFK_wind=round((TAF_features$cross_JFK_1[meds]+TAF_features$cross_JFK_2[meds]+TAF_features$cross_JFK_3[meds]+TAF_features$cross_JFK_4[meds])/4,1),
+	EWR_wind=round((TAF_features$cross_EWR_1[meds]+TAF_features$cross_EWR_2[meds]+TAF_features$cross_EWR_3[meds]+TAF_features$cross_EWR_4[meds])/4,1),
+	LGAa_wind=round((TAF_features$cross_LGAa_1[meds]+TAF_features$cross_LGAa_2[meds]+TAF_features$cross_LGAa_3[meds]+TAF_features$cross_LGAa_4[meds])/4,1),
+	LGAa_wind=round((TAF_features$cross_LGAb_1[meds]+TAF_features$cross_LGAb_2[meds]+TAF_features$cross_LGAb_3[meds]+TAF_features$cross_LGAb_4[meds])/4,1))
+representative
+# Make graphs of avg silhouette width when clustering for NY area and for JFK alone
+sil_widths = c()
+for (i1 in 2:30) {
+	cluster_1 = pam(x=fake_features,k=i1,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
+	sil_widths = c(sil_widths,cluster_1$silinfo$avg.width)
+}
+library(ggplot2)
+plot_data = data.frame(k=c(2:30),sil_width=sil_widths)
+pdf("Fig5.pdf",width=8,height=4)
+ggplot(data=plot_data,aes(x=k,y=sil_width,group=1))+geom_line(colour="orange")+geom_point(colour="orange")+xlab("Number of Clusters")+ylab("Average Silhouette Width")+theme_bw()
+dev.off()
+JFK_features = c(1:4,17:20,29:32,41:44,53:56,65:68)
+JFK_data = fake_features[,JFK_features]
+sil_widths = c()
+for (i1 in 2:30) {
+	cluster_1 = pam(x=JFK_data,k=i1,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
+	sil_widths = c(sil_widths,cluster_1$silinfo$avg.width)
+}
+library(ggplot2)
+plot_data = data.frame(k=c(2:30),sil_width=sil_widths)
+pdf("Fig6.pdf",width=8,height=4)
+ggplot(data=plot_data,aes(x=k,y=sil_width,group=1))+geom_line(colour="orange")+geom_point(colour="orange")+xlab("Number of Clusters")+ylab("Average Silhouette Width")+theme_bw()
+dev.off()
+# Run PAM clustering for a few reasonable values of k
 pam4 = pam(x=fake_features,k=4,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
 pam8 = pam(x=fake_features,k=8,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
 pam12 = pam(x=fake_features,k=12,diss=F,metric="manhattan",keep.diss=F,keep.data=F)
