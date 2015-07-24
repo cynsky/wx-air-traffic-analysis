@@ -34,6 +34,8 @@ for (i1 in 1:length(fnames)) {
 	# Remove data on "PROPOSED" TFMI
 	test = test[test$AdvisoryCategory!="PROPOSED",]
 
+	# START WITH GDPs and GSs
+
 	# Pick out rows where we have a GDP or GS start and end time
 	# NB: Valid.Bgn.Date.Time.UTC is uselses for these rows
 	GDP_rows = which(test$GDP.Bgn.Date.Time.UTC!="-" & test$GDP.End.Date.Time.UTC!="-")
@@ -60,6 +62,8 @@ for (i1 in 1:length(fnames)) {
 	n_LGA_GS = length(LGA_GS)
 	n_JFK_GS = length(JFK_GS)
 
+	# NEXT LOOK AT REROUTE ADVISORIES
+
 	# Pick out rows where we have a REROUTE advisory for departures to EWR, LGA, or JFK
 	EWR_Re = intersect(which(test$AdvisoryCategory=="REROUTE"),grep("TO EWR",test$Include.Traffic))
 	LGA_Re = intersect(which(test$AdvisoryCategory=="REROUTE"),grep("TO LGA",test$Include.Traffic))
@@ -69,8 +73,27 @@ for (i1 in 1:length(fnames)) {
 	n_LGA_Re = length(LGA_Re)
 	n_JFK_Re = length(JFK_Re)
 
-	# Key question: what does it mean when AdvisoryCategory is OPERATIONS PLAN?
-	# NB: There aren't many advisories of AFPs and no way to pick out AFP data specifically related to conditions in New York
+
+	# FINALLY, LOOK AT OTHER TYPES OF ATFMI
+
+	# The biggest category of advisories is OPERATIONS PLAN
+	# I believe these are advisories that summarize all the ATFMI in operation at the time
+	# NB: you can see the current operations plan at http://www.fly.faa.gov/adv/adv_spt.jsp
+	# NB: the ControlElement for operations plans is always DCC
+	# Ops_plans = which(test$AdvisoryCategory=="OPERATIONS PLAN")
+	# table(test$ControlElement[Ops_plans])
+
+	# Airspace Flow Programs would seem to be important
+	# NB: they are remarkably rare in the advisory data we have
+	# Pick out row where we have an AFP advisory
+	# AFP_rows = which(test$AFP.Bgn.Date.Time.UTC!="-" & test$AFP.End.Date.Time.UTC!="-")
+	# For AFP's, it's not clear how to determine if the AFP impacts traffic headed to the NY area
+	# The other fields in our data set related to AFPs are quite sparse
+
+	# The only other category of advisory with more than a handful of observations is NATOS/NATOTS
+	# NATOS_plans = which(test$AdvisoryCategory=="NATOS/NATOTS")
+	# NB: the ControlElement for NATOS/NATOTS is always DCC
+	# table(test$ControlElement[NATOS_plans])
 
 	# Now ceate a data frame of the most relevant data for our purposes
 	TFMI = c(rep("GDP",n_EWR_GDP),rep("GDP",n_LGA_GDP),rep("GDP",n_JFK_GDP),rep("GS",n_EWR_GS),
@@ -176,7 +199,7 @@ for (i1 in 1:length(fnames)) {
 		begin_hour=begin_hour,begin_minute=begin_minute,end_year=end_year,end_month=end_month,end_day=end_day,
 		end_hour=end_hour,end_minute=end_minute)
 
-	# Write out the data from the current file
+	# Add the data to the bid data frame we are building
 	if (i1==1) big_df=test_df
 	if (i1>1) big_df=rbind(big_df,test_df)
 
@@ -185,7 +208,6 @@ for (i1 in 1:length(fnames)) {
 	rm(end_day,end_hour,end_minute,test)
 }
 
+# Write out the data we have
 write.csv(big_df,"TFMI_data.csv",row.names=FALSE)
-
-
 
