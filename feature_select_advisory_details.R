@@ -1,10 +1,21 @@
 # This is an R script for selecting features from Traffic Flow Management advisory data from the New York area.
 # Script author: Kenneth Kuhn
-# Last modified: 7/26/2015
+# Last modified: 8/9/2015
 
 
 # Read in the advisory data
-advisory_data = read.csv("/Users/kkuhn/Desktop/advy_2010_2014/TFMI_data.csv")
+advisory_data = read.csv("TFMI_data.csv")
+
+# Optional: Only pick out volume or weather related ATFMI
+volume_rows = which(advisory_data$cause %in% c("VOLUME","VOLUME / COMPACTED DEMAND",
+	"VOLUME / MULTI-TAXI","VOLUME / VOLUME"))
+# wx_rows = which(advisory_data$cause %in% c("WEATHER","WEATHER / BRAKING ACTION",
+# 	"WEATHER / FOG","WEATHER / LOW CEILINGS","WEATHER / LOW VISIBILITY","WEATHER / RAIN",
+# 	"WEATHER / RUNWAY TREATMENT","WEATHER / SNOW-ICE","WEATHER / THUNDERSTORMS",
+# 	"WEATHER / TORNADO-HURRICANE","WEATHER / WIND","WEATHER/ LOW CEILINGS"))
+advsiory_data = advisory_data[volume_rows,]
+# advisory_data = advisory_data[wx_rows,]
+
 
 # Reformat the date and time information for R
 begin_dates = as.Date(paste(advisory_data$begin_month,advisory_data$begin_day,
@@ -106,4 +117,8 @@ for (i1 in 1:num_days) {
 
 # Save the results
 put_in_df = data.frame(date=date_v,TFMI_time)
-write.csv(put_in_df,"/Users/kkuhn/Desktop/TFMI_features.csv",row.names=FALSE)
+# write.csv(put_in_df,"TFMI_features.csv",row.names=FALSE)
+write.csv(put_in_df,"TFMI_volume_only_features.csv",row.names=FALSE)
+# write.csv(put_in_df,"TFMI_wx_only_features.csv",row.names=FALSE)
+
+
