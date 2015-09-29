@@ -159,11 +159,19 @@ Reroute_var_names = row.names(Reroute_var_import)
 Reroute_var_importances = Reroute_var_import[,1]
 Reroute_classification = data.frame(variable=Reroute_var_names,importance=Reroute_var_importances)
 write.csv(Reroute_classification,"Reroute_importance.csv",row.names=F)
+# Get an averaged measure of variable importance
+avg_imp = Reroute_classification$importance+GS_classification$importance+GDP_classification$importance
+var_df = data.frame(Variable=GS_classification$variable,Importance=avg_imp)
+var_df = var_df[which(var_df$Importance>4),]
+var.barplot = ggplot(var_df,aes(x=reorder(Variable,-Importance),y=Importance))+geom_bar(stat="identity",fill="orange",colour="black")
+var.barplot = var.barplot+theme_bw()+theme(axis.text=element_text(size=7))+labs(x="Variable")
+pdf("VariableImportance.pdf",width=9,height=4)
+var.barplot
+dev.off()
+
 
 # OK now on to the cluster analysis
 #
-# Get an averaged measure of variable importance
-avg_imp = Reroute_classification$importance+GS_classification$importance+GDP_classification$importance
 # Get just the feature data into a data frame
 just_these = c(2:77,108:119)
 just_features = all_data[,just_these]
@@ -233,6 +241,15 @@ results25 = data.frame(date=new_dates,cluster=pam25$clustering,traffic=new_traff
 	visibility=new_vis,thunderstorm=new_TS,rain=new_rain)
 write.csv(results25,"PAM_25.csv",row.names=F)
 
-
-
+sils = c(rep(-99,49))
+key_features = c(1:12,15:20)
+new_data = scaled_features[complete.cases(scaled_features[,key_features]),key_features]
+for (i1 in 1:49) {
+	new_model = pam(new_data,k=i1+1,metric="manhattan")
+	sils[i1] = new_model$silinfo$avg.width
+}
+plot_data = data.frame(k=c(2:50),sil_width=sils)
+pdf("SilWidth.pdf",width=8,height=4)
+ggplot(data=plot_data,aes(x=k,y=sil_width,group=1))+geom_line(colour="orange")+geom_point(colour="orange")+xlab("Number of Clusters")+ylab("Average Silhouette Width")+theme_bw()
+dev.off()
 
